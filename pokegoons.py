@@ -66,10 +66,9 @@ def shiny(bot, trigger):
 
     Usage: .shiny <number> [<number>...]
     """
-    for num in trigger.match.group(1).split():
+    for num in trigger.match.group(2).split():
         try:
             shiny_num = int(num)
-            bot.say('checking %d' % shiny_num)
             check_shiny(bot, trigger, shiny_num)
         except ValueError:
             pass

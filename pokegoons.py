@@ -39,13 +39,11 @@ def check_shiny(bot, trigger, shiny_num):
     except RequestError, e:
         bot.say('Error: %s' % e)
     if len(feed.entry) == 0:
-        bot.say('%s: No shiny matches found for <%d>' % (trigger.nick,
-                shiny_num))
+        bot.say('[%4d] No matches' % (shiny_num))
     for entry in feed.entry:
         username = entry.get_value('username')
         fc = entry.get_value('friendcode')
-        bot.say('%s: Got shiny match for %d!' % (trigger.nick, shiny_num))
-        bot.say('Goon: %s - FC: %s' % (username, fc))
+        bot.say('[%4d] Goon: %s - FC: %s' % (shiny_num, username, fc))
 
 
 @rule(''.join([
@@ -66,13 +64,15 @@ def instacheck_egg(bot, trigger):
 def shiny(bot, trigger):
     """Query the pokegoons spreadsheet for a shiny match
 
-    Usage: .shiny <number>
+    Usage: .shiny <number> [<number>...]
     """
-    try:
-        shiny_num = int(trigger.match.group(2))
-        check_shiny(bot, trigger, shiny_num)
-    except ValueError:
-        pass
+    for num in trigger.match.group(1).split():
+        try:
+            shiny_num = int(num)
+            bot.say('checking %d' % shiny_num)
+            check_shiny(bot, trigger, shiny_num)
+        except ValueError:
+            pass
 
 
 def configure(config):

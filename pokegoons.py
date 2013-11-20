@@ -68,8 +68,11 @@ def shiny(bot, trigger):
 
     Usage: .shiny <number>
     """
-    shiny_num = int(trigger.match.group(2))
-    check_shiny(bot, trigger, shiny_num)
+    try:
+        shiny_num = int(trigger.match.group(2))
+        check_shiny(bot, trigger, shiny_num)
+    except ValueError:
+        pass
 
 
 def configure(config):

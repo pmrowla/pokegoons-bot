@@ -1,0 +1,4 @@
+gdata==2.0.18
+pyOpenSSL==0.13.1
+willie==4.1.0
+wsgiref==0.1.2

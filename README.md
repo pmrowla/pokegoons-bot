@@ -1,4 +1,4 @@
 pokegoons-bot
 =============
 
-IRC bot for #pokegoons
+willie (IRC bot) module for #pokegoons

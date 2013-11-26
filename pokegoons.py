@@ -48,7 +48,7 @@ def check_shiny(bot, trigger, shiny_num):
 
 @rule(''.join([
     ur'(?i)(?P<pokemon>\w+) \((?P<gender>F|M)\) - (?P<nature>\w+), ',
-    ur'(?P<ability>\w+), (?P<ivs>(\d{1,2}\\){5}\d{1,2}) ',
+    ur'(?P<ability>[\w ]+), (?P<ivs>(\d{1,2}\\){5}\d{1,2}) ',
     ur'\[(?P<shiny_num>\d{1,4})\]']))
 def instacheck_egg(bot, trigger):
     """Handle regex for an instacheck egg line

@@ -87,7 +87,7 @@ def parse_showdown_log(bot, trigger, log):
         match_data['p1_result'] = '(L)'
         match_data['p2_result'] = '(W)'
     msg = 'Pokemon showdown: %(tier)s %(gametype)s - ' \
-        '%(p1)s %(p1_result)s vs %(p2)s %(p2_result)s' % match_data
+        '%(p1)s vs %(p2)s' % match_data
     bot.reply(msg)
 
 

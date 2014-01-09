@@ -80,12 +80,16 @@ def parse_showdown_log(bot, trigger, log):
             match_data['tier'] = parts[1]
         elif parts[0] == 'win':
             match_data['win'] = parts[1]
-    if match_data['win'] == match_data['p1']:
-        match_data['p1_result'] = '(W)'
-        match_data['p2_result'] = '(L)'
-    elif match_data['win'] == match_data['p2']:
-        match_data['p1_result'] = '(L)'
-        match_data['p2_result'] = '(W)'
+    if 'win' in match_data:
+        if match_data['win'] == match_data['p1']:
+            match_data['p1_result'] = '(W)'
+            match_data['p2_result'] = '(L)'
+        elif match_data['win'] == match_data['p2']:
+            match_data['p1_result'] = '(L)'
+            match_data['p2_result'] = '(W)'
+    else:
+        match_data['p1_result'] = '(T)'
+        match_data['p2_result'] = '(T)'
     msg = 'Pokemon showdown: %(tier)s %(gametype)s - ' \
         '%(p1)s vs %(p2)s' % match_data
     bot.reply(msg)

@@ -292,3 +292,8 @@ def clearfc(bot, trigger):
     else:
         bot.reply('Could not find any matching codes to delete')
     conn.close()
+
+
+@commands('table')
+def table(bot, trigger):
+    bot.say(u'(ノ ゜Д゜)ノ ︵ ┻━┻')

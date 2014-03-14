@@ -14,7 +14,7 @@ from gdata.gauth import OAuth2Token
 from gdata.spreadsheets.client import SpreadsheetsClient, ListQuery
 from gdata.service import RequestError
 
-from willie.module import commands, rule
+from willie.module import commands, rule, example
 from willie.config import ConfigurationError
 
 
@@ -152,8 +152,7 @@ def configure(config):
     config.save()
 
 
-def setup(bot):
-    """Setup pokegoons module"""
+def setup_gdata(bot):
     if not bot.config.has_option('pokegoons', 'access_token'):
         raise ConfigurationError('You must reconfigure the pokegoons module '
                                  'to obtain a Google OAuth token')
@@ -167,3 +166,129 @@ def setup(bot):
                         refresh_token=refresh_token)
     bot.ss_client = SpreadsheetsClient()
     token.authorize(bot.ss_client)
+
+
+def setup(bot):
+    """Setup pokegoons module"""
+    setup_gdata(bot)
+    setup_fc(bot)
+
+
+def setup_fc(bot):
+    if not bot.db:
+        raise ConfigurationError('Database not available')
+    conn = bot.db.connect()
+    c = conn.cursor()
+    try:
+        c.execute('SELECT * FROM fc_codes')
+    except StandardError:
+        c.execute('''
+            CREATE TABLE IF NOT EXISTS fc_codes (
+                nick TEXT,
+                game TEXT,
+                code TEXT,
+                PRIMARY KEY (nick, game))
+            ''')
+        conn.commit()
+    conn.close()
+
+
+@commands('fc')
+@example('.fc masuda')
+def fc(bot, trigger):
+    """Retreive your friend codes or codes for the specified nick"""
+    if not trigger.match.group(2):
+        nick = trigger.nick
+    else:
+        nick = trigger.match.group(2).strip()
+    sub = bot.db.substitution
+    conn = bot.db.connect()
+    c = conn.cursor()
+    c.execute('SELECT * FROM fc_codes WHERE nick = {0}'.format(sub), (nick,))
+    rows = c.fetchall()
+    if not rows:
+        bot.reply("Couldn't find any FCs for <%s>" % nick)
+    else:
+        msg = []
+        for (nick, game, code) in rows:
+            msg.append('%s: %s' % (game, code))
+        bot.reply("%s's friend codes: %s" % (nick, ' | '.join(msg)))
+    conn.close()
+
+
+@commands('setfc', 'addfc')
+@example('.setfc 3DS = 1234-1234-1234')
+def setfc(bot, trigger):
+    """Add or update a friend code for the specified game"""
+    usage = 'Usage: .setfc <game> = <code>'
+    if not trigger.match.group(2):
+        bot.reply(usage)
+        return
+    try:
+        (game, code) = trigger.match.group(2).split('=', 1)
+    except ValueError:
+        bot.reply(usage)
+        return
+    game = game.strip()
+    code = code.strip()
+    sub = bot.db.substitution
+    conn = bot.db.connect()
+    c = conn.cursor()
+    c.execute(
+        'SELECT * FROM fc_codes WHERE nick = {0} AND game = {0}'.format(sub),
+        (trigger.nick, game))
+    if not c.fetchone():
+        c.execute('''
+            INSERT INTO fc_codes (nick, game, code) VALUES ({0}, {0}, {0})
+            '''.format(sub), (trigger.nick, game, code))
+    else:
+        c.execute('''
+            UPDATE fc_codes SET code = {0} WHERE nick = {0} AND game = {0}
+            '''.format(sub), (code, trigger.nick, game))
+    bot.reply('Set code for <%s> to <%s>' % (game, code))
+    conn.commit()
+    conn.close()
+
+
+@commands('delfc', 'remfc')
+@example('.delfc 3DS')
+def delfc(bot, trigger):
+    """Delete your friend code for the specified game"""
+    if not trigger.match.group(2):
+        return
+    game = trigger.match.group(2).strip()
+    sub = bot.db.substitution
+    conn = bot.db.connect()
+    c = conn.cursor()
+    c.execute(
+        'SELECT * FROM fc_codes WHERE nick = {0} AND game = {0}'.format(sub),
+        (trigger.nick, game))
+    if c.fetchone():
+        c.execute('''
+            DELETE FROM fc_codes WHERE nick = {0} AND game = {0}
+            '''.format(sub), (trigger.nick, game))
+        bot.reply('Deleted code for %s' % (game))
+        conn.commit()
+    else:
+        bot.reply('Could not find a matching code to delete')
+    conn.close()
+
+
+@commands('clearfc')
+def clearfc(bot, trigger):
+    """Delete ALL of your friend codes"""
+    sub = bot.db.substitution
+    conn = bot.db.connect()
+    c = conn.cursor()
+    c.execute(
+        'SELECT * FROM fc_codes WHERE nick = {0}'.format(sub),
+        (trigger.nick,))
+    if c.fetchone():
+        c.execute('''
+            DELETE FROM fc_codes WHERE nick = {0}
+            '''.format(sub), (trigger.nick,))
+        bot.reply('Deleted all of your friend codes')
+        conn.commit()
+    else:
+        bot.reply('Could not find any matching codes to delete')
+    conn.close()

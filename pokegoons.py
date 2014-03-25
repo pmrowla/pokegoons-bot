@@ -6,10 +6,6 @@
 Author: Peter "astroman" Rowlands <peter@pmrowla.com>
 """
 
-import requests
-
-from bs4 import BeautifulSoup
-
 from gdata.gauth import OAuth2Token
 from gdata.spreadsheets.client import SpreadsheetsClient, ListQuery
 from gdata.service import RequestError
@@ -62,58 +58,6 @@ def instacheck_egg(bot, trigger):
     """
     shiny_num = int(trigger.match.group('shiny_num'))
     check_shiny(bot, trigger, shiny_num)
-
-
-def parse_showdown_log(bot, trigger, log):
-    """Parse the a pokemon showdown log"""
-    match_data = {}
-    for line in log.splitlines():
-        line = line.lstrip('|').strip()
-        parts = line.split('|')
-        if parts[0] == 'player' and len(parts) > 2:
-            # there are occasionally garbage player entries for when a player
-            # leaves, so we verify length
-            match_data[parts[1]] = parts[2]
-        elif parts[0] == 'gametype':
-            match_data['gametype'] = parts[1]
-        elif parts[0] == 'tier':
-            match_data['tier'] = parts[1]
-        elif parts[0] == 'win':
-            match_data['win'] = parts[1]
-    if 'win' in match_data:
-        if match_data['win'] == match_data['p1']:
-            match_data['p1_result'] = '(W)'
-            match_data['p2_result'] = '(L)'
-        elif match_data['win'] == match_data['p2']:
-            match_data['p1_result'] = '(L)'
-            match_data['p2_result'] = '(W)'
-    else:
-        match_data['p1_result'] = '(T)'
-        match_data['p2_result'] = '(T)'
-    msg = 'Pokemon showdown: %(tier)s %(gametype)s - ' \
-        '%(p1)s vs %(p2)s' % match_data
-    bot.reply(msg)
-
-
-def parse_showdown_match(bot, trigger, html):
-    """Parse the HTML for a pokemon showdown match"""
-    soup = BeautifulSoup(html)
-    for script in soup.find_all('script'):
-        if script.has_attr('class'):
-            return parse_showdown_log(bot, trigger, script.string)
-
-
-@rule(''.join([
-    ur'(?i).*http://replay\.pokemonshowdown\.com/(?P<match_id>[\w-]+)']))
-def showdown_match(bot, trigger):
-    """Handle regex for a pokemon showdown match link"""
-    match_id = trigger.match.group('match_id')
-    try:
-        r = requests.get('http://replay.pokemonshowdown.com/%s' % match_id)
-        r.raise_for_status()
-        parse_showdown_match(bot, trigger, r.text)
-    except requests.exceptions.HTTPError:
-        pass
 
 
 @commands('shiny')

@@ -148,15 +148,22 @@ def fc(bot, trigger):
     sub = bot.db.substitution
     conn = bot.db.connect()
     c = conn.cursor()
-    c.execute('SELECT * FROM fc_codes WHERE nick = {0}'.format(sub), (nick,))
+    c.execute('SELECT * FROM fc_codes WHERE nick LIKE {0}'.format(sub),
+              (nick,))
     rows = c.fetchall()
     if not rows:
         bot.reply("Couldn't find any FCs for <%s>" % nick)
     else:
-        msg = []
-        for (nick, game, code) in rows:
-            msg.append('%s: %s' % (game, code))
-        bot.reply("%s's friend codes: %s" % (nick, ' | '.join(msg)))
+        msgs = []
+        for (n, game, code) in rows:
+            msgs.append('%s: %s' % (game, code))
+        msg = "%s's friend codes: %s" % (nick, msgs[0])
+        for m in msgs[1:]:
+            if len(msg) >= 400:
+                bot.reply(msg)
+                msg = '(continued)'
+            msg = '%s | %s' % (msg, m)
+        bot.reply(msg)
     conn.close()
 
 
@@ -178,14 +185,16 @@ def setfc(bot, trigger):
     sub = bot.db.substitution
     conn = bot.db.connect()
     c = conn.cursor()
-    c.execute(
-        'SELECT * FROM fc_codes WHERE nick = {0} AND game = {0}'.format(sub),
-        (trigger.nick, game))
-    if not c.fetchone():
+    c.execute('''
+        SELECT * FROM fc_codes WHERE nick LIKE {0} AND game LIKE {0}
+        '''.format(sub), (trigger.nick, game))
+    row = c.fetchone()
+    if not row:
         c.execute('''
             INSERT INTO fc_codes (nick, game, code) VALUES ({0}, {0}, {0})
             '''.format(sub), (trigger.nick, game, code))
     else:
+        (nick, game, old_code) = row
         c.execute('''
             UPDATE fc_codes SET code = {0} WHERE nick = {0} AND game = {0}
             '''.format(sub), (code, trigger.nick, game))

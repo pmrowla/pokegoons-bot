@@ -10,8 +10,13 @@ from gdata.gauth import OAuth2Token
 from gdata.spreadsheets.client import SpreadsheetsClient, ListQuery
 from gdata.service import RequestError
 
+from willie import web
 from willie.module import commands, rule, example
 from willie.config import ConfigurationError
+
+from HTMLParser import HTMLParser
+
+import json
 
 
 # Google data API info, you most likely don't want to edit this
@@ -254,3 +259,64 @@ def clearfc(bot, trigger):
 @commands('table')
 def table(bot, trigger):
     bot.say(u'(ノ ゜Д゜)ノ ︵ ┻━┻')
+
+
+@commands('b', 'bulb', 'bulbapedia')
+@example('.w charizard')
+def bulbapedia(bot, trigger):
+    """Search bulbapedia"""
+
+    if trigger.group(2) is None:
+        bot.reply("what do you want me to look up?")
+        return
+
+    query = trigger.group(2)
+
+    if not query:
+        bot.reply('what do you want me to look up?')
+        return
+    server = 'bulbapedia.bulbagarden.net'
+    (query, snippet) = mw_search(server, query, 1)
+    if not query:
+        bot.reply("i can't find any results for that.")
+        return
+
+    bot.say('"%s" - http://bulbapedia.bulbagarden.net/wiki/%s' % (
+        strip_tags(snippet).strip(), query))
+
+
+def mw_search(server, query, num):
+    """
+    Searches the specified MediaWiki server for the given query, and returns
+    the specified number of results.
+    """
+    search_url = ('http://%s/w/api.php?format=json&action=query'
+                  '&list=search&srlimit=%d&srprop=timestamp|snippet'
+                  '&srwhat=text'
+                  '&srsearch=') % (server, num)
+    search_url += query
+    query = json.loads(web.get(search_url))
+    if 'query' in query:
+        query = query['query']['search'][0]
+        return (query['title'], query['snippet'])
+    else:
+        return None
+
+
+class MLStripper(HTMLParser):
+
+    def __init__(self):
+        self.reset()
+        self.fed = []
+
+    def handle_data(self, d):
+        self.fed.append(d)
+
+    def get_data(self):
+        return ''.join(self.fed)
+
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()

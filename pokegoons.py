@@ -60,12 +60,16 @@ def instacheck_egg(bot, trigger):
     check_shiny(bot, trigger, shiny_num)
 
 
-@commands('shiny')
+@commands('shiny', 'sv')
 def shiny(bot, trigger):
     """Query the pokegoons spreadsheet for a shiny match
 
     Usage: .shiny <number> [<number>...]
     """
+    usage = 'Usage: .shiny <number> [<number>...]'
+    if not trigger.match.group(2):
+        bot.reply(usage)
+        return
     for num in trigger.match.group(2).split():
         try:
             shiny_num = int(num)
@@ -152,7 +156,7 @@ def fc(bot, trigger):
               (nick,))
     rows = c.fetchall()
     if not rows:
-        bot.reply("Couldn't find any FCs for <%s>" % nick)
+        bot.say("Couldn't find any FCs for <%s>" % nick)
     else:
         msgs = []
         for (n, game, code) in rows:
@@ -163,7 +167,7 @@ def fc(bot, trigger):
                 bot.reply(msg)
                 msg = '(continued)'
             msg = '%s | %s' % (msg, m)
-        bot.reply(msg)
+        bot.say(msg)
     conn.close()
 
 

@@ -16,6 +16,8 @@ from willie.config import ConfigurationError
 
 from HTMLParser import HTMLParser
 
+from os import path
+
 import json
 import sqlite3 as lite
 import re
@@ -295,7 +297,8 @@ def data(bot, trigger):
         """Joke response for missingno"""
         if 'missingno' in trigger.group(2).lower():
             bot.say("PokedexError: 'dex' codec can't find pokemon 0xcc in position 0: ordinal not in range(128) (Please stop looking)")
-        con = lite.connect('./willie/modules/pokedex.db')
+        dbDir = path.join(path.dirname(__file__))
+        con = lite.connect(dbDir + '/pokedex.db')
         with con:
             """Handle the input to take into account different orderings of the word mega and use of hyphens"""
             reg = re.compile(r"(?:[\ -](mega)|(mega)[\ -])([a-z]*)(?:[\ -](X|Y))?",re.IGNORECASE)

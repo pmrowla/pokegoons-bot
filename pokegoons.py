@@ -280,13 +280,14 @@ def bulbapedia(bot, trigger):
         bot.reply('what do you want me to look up?')
         return
     server = 'bulbapedia.bulbagarden.net'
-    (query, snippet) = mw_search(server, query, 1)
-    if not query:
+    result = mw_search(server, query, 1)
+    if not result:
         bot.reply("i can't find any results for that.")
         return
+    (title, snippet) = result
 
     bot.say('"%s" - http://bulbapedia.bulbagarden.net/wiki/%s' % (
-        strip_tags(snippet).strip(), query))
+        strip_tags(snippet).strip(), title.replace(' ', '_')))
 
 @commands('data')
 @example('.data bulbasaur')
@@ -366,8 +367,11 @@ def mw_search(server, query, num):
     search_url += query
     query = json.loads(web.get(search_url))
     if 'query' in query:
-        query = query['query']['search'][0]
-        return (query['title'], query['snippet'])
+        try:
+            query = query['query']['search'][0]
+            return (query['title'], query['snippet'])
+        except IndexError:
+            return None
     else:
         return None
 

@@ -289,20 +289,26 @@ def bulbapedia(bot, trigger):
     bot.say('"%s" - http://bulbapedia.bulbagarden.net/wiki/%s' % (
         strip_tags(snippet).strip(), title.replace(' ', '_')))
 
+
 @commands('data')
 @example('.data bulbasaur')
 def data(bot, trigger):
     """Give information about selected pokemon"""
-    
+
     if trigger.group(2):
         """Joke response for missingno"""
         if 'missingno' in trigger.group(2).lower():
-            bot.say("PokedexError: 'dex' codec can't find pokemon 0xcc in position 0: ordinal not in range(128) (Please stop looking)")
+            bot.say("PokedexError: 'dex' codec can't find pokemon 0xcc in"
+                    " position 0: ordinal not in range(128) (Please stop"
+                    " looking)")
         dbDir = path.join(path.dirname(__file__))
         con = lite.connect(dbDir + '/pokedex.db')
         with con:
-            """Handle the input to take into account different orderings of the word mega and use of hyphens"""
-            reg = re.compile(r"(?:[\ -](mega)|(mega)[\ -])([a-z]*)(?:[\ -](X|Y))?",re.IGNORECASE)
+            # Handle the input to take into account different orderings of the
+            # word mega and use of hyphens
+            reg = re.compile(
+                r"(?:[\ -](mega)|(mega)[\ -])([a-z]*)(?:[\ -](X|Y))?",
+                re.IGNORECASE)
             retrieved = trigger.group(2).strip()
             name = reg.search(retrieved)
             poke = reg.findall(retrieved)
@@ -313,18 +319,24 @@ def data(bot, trigger):
                 retrieved = reg.sub(r"\3", retrieved)
                 for match in poke:
                     retrieved = retrieved + '-' + match
-            
+
             """Search the database and make the output somewhat pretty"""
             cur = con.cursor()
-            cur.execute("SELECT dexNo, species, type1, type2, genderRatio, hp, atk, pdef, spa, sdef, spd, ability1, ability2, hiddenAbility, egg1, egg2 FROM Pokedex WHERE UPPER(species) = '" + retrieved.upper() + "'")
+            cur.execute(
+                """
+                SELECT dexNo, species, type1, type2, genderRatio, hp, atk,
+                pdef, spa, sdef, spd, ability1, ability2, hiddenAbility, egg1,
+                egg2 FROM Pokedex WHERE UPPER(species) = {0}
+                """.format('?'),
+                (retrieved.upper(),))
             rows = cur.fetchall()
             for row in rows:
                 dexInfo = 'No. ' + str(row[0]) + ' ' + row[1] + ' [' + row[2]
                 if row[3]:
-                    dexInfo = dexInfo + ', ' + row[3]+ ']'
+                    dexInfo = dexInfo + ', ' + row[3] + ']'
                 else:
                     dexInfo = dexInfo + ']'
-                
+
                 if row[4]:
                     dexInfo = dexInfo + ' M/F '
                     if row[4] == 0.5:
@@ -335,23 +347,29 @@ def data(bot, trigger):
                         dexInfo = dexInfo + '1:0'
                     elif row[4] == 0.875:
                         dexInfo = dexInfo + '7:1'
-                
-                
-                dexInfo = dexInfo + ', Hp ' + str(row[5]) + ' | Atk ' + str(row[6]) + ' | Def ' + str(row[7]) + ' | SpA ' + str(row[8]) + ' | SpD ' + str(row[9]) + ' | Spe ' + str(row[10])+','
-                
+
+                dexInfo = dexInfo + ', Hp ' + str(row[5]) + ' | Atk ' + \
+                    str(row[6]) + ' | Def ' + str(row[7]) + ' | SpA ' + \
+                    str(row[8]) + ' | SpD ' + str(row[9]) + ' | Spe ' + \
+                    str(row[10])+','
+
                 if row[12] == '' and row[13] == '':
                     dexInfo = dexInfo + ' Ability: ' + row[11]
                 elif row[12] == '':
-                    dexInfo = dexInfo + ' Abilities: ' + row[11] + ' <' + row[13] +'>'
+                    dexInfo = dexInfo + ' Abilities: ' + row[11] + ' <' + \
+                        row[13] + '>'
                 elif row[13] == '':
-                    dexInfo = dexInfo + ' Abilities: ' + row[11] + '/' + row[12]
+                    dexInfo = dexInfo + ' Abilities: ' + row[11] + '/' + \
+                        row[12]
                 else:
-                    dexInfo = dexInfo + ' Abilities: ' + row[11] + '/' + row[12] + ' <' + row[13] + '>'
-                
+                    dexInfo = dexInfo + ' Abilities: ' + row[11] + '/' + \
+                        row[12] + ' <' + row[13] + '>'
+
                 if row[15] == '':
-                    dexInfo = dexInfo + ' {Egg: ' + row[14] + row[15] +'}'
+                    dexInfo = dexInfo + ' {Egg: ' + row[14] + row[15] + '}'
                 else:
-                    dexInfo = dexInfo + ' {Egg: ' + row[14] + ', ' + row[15]+'}'
+                    dexInfo = dexInfo + ' {Egg: ' + row[14] + ', ' + \
+                        row[15] + '}'
                 bot.say(dexInfo)
 
 

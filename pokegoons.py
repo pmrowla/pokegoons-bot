@@ -158,7 +158,7 @@ def fc(bot, trigger):
         nick = trigger.nick
     else:
         nick = trigger.match.group(2).strip()
-    sub = bot.db.substitution
+    sub = '?'
     conn = bot.db.connect()
     c = conn.cursor()
     c.execute('SELECT * FROM fc_codes WHERE nick LIKE {0}'.format(sub),
@@ -195,7 +195,7 @@ def setfc(bot, trigger):
         return
     game = game.strip()
     code = code.strip()
-    sub = bot.db.substitution
+    sub = '?'
     conn = bot.db.connect()
     c = conn.cursor()
     c.execute('''
@@ -223,7 +223,7 @@ def delfc(bot, trigger):
     if not trigger.match.group(2):
         return
     game = trigger.match.group(2).strip()
-    sub = bot.db.substitution
+    sub = '?'
     conn = bot.db.connect()
     c = conn.cursor()
     c.execute(
@@ -243,7 +243,7 @@ def delfc(bot, trigger):
 @commands('clearfc')
 def clearfc(bot, trigger):
     """Delete ALL of your friend codes"""
-    sub = bot.db.substitution
+    sub = '?'
     conn = bot.db.connect()
     c = conn.cursor()
     c.execute(

@@ -1,18 +1,20 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2013 Peter Rowlands
 """
-#pokegoons willie module
+#pokegoons sopel module
 
 Author: Peter "astroman" Rowlands <peter@pmrowla.com>
 """
+
+from __future__ import unicode_literals, absolute_import, division
 
 from gdata.gauth import OAuth2Token
 from gdata.spreadsheets.client import SpreadsheetsClient, ListQuery
 from gdata.service import RequestError
 
-from willie import web
-from willie.module import commands, rule, example
-from willie.config import ConfigurationError
+from sopel import web
+from sopel.module import commands, rule, example
+from sopel.config import ConfigurationError
 
 from HTMLParser import HTMLParser
 
@@ -31,7 +33,7 @@ GDATA_SCOPE = ' '.join([
     'https://spreadsheets.google.com/feeds/',
     'https://docs.google.com/feeds/'
 ])
-GDATA_USER_AGENT = 'willie/pokegoons'
+GDATA_USER_AGENT = 'sopel/pokegoons'
 
 # pokegoons spreadsheet key
 GOON_KEY = '0AiGAq6LFMm6RdHlEU09XLVRXMnJXUFhGZC1uWjFnZlE'

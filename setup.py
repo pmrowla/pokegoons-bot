@@ -15,9 +15,6 @@ if __name__ == '__main__':
 with open('README.md') as readme_file:
     readme = readme_file.read()
 
-with open('NEWS') as history_file:
-    history = history_file.read()
-
 with open('requirements.txt') as requirements_file:
     requirements = [req for req in requirements_file.readlines()]
 
@@ -29,7 +26,7 @@ setup(
     name='sopel_modules.pokegoons',
     version='0.1.0',
     description='#pokegoons irc bot',
-    long_description=readme + '\n\n' + history,
+    long_description=readme,
     author='Peter Rowlands',
     author_email='peter@pmrowla.com',
     url='http://github.com/pmrowla/pokegoons-bot',
